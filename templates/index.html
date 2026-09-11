@@ -99,16 +99,27 @@ async function sendMessage() {
   try {
     const response = await fetch("/api/send-test", {
       method: "POST",
-      headers: {"Content-Type": "application/json"},
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
         body: document.getElementById("body").value
       })
     });
 
-    const data = await response.json();
-    result.textContent = JSON.stringify(data, null, 2);
+    const rawText = await response.text();
+
+    result.textContent =
+      "HTTP STATUS: " + response.status +
+      "\n\nCONTENT-TYPE: " +
+      (response.headers.get("content-type") || "unknown") +
+      "\n\nRESPONSE:\n" +
+      rawText;
+
   } catch (err) {
-    result.textContent = String(err);
+    result.textContent =
+      "REQUEST ERROR:\n" +
+      String(err);
   }
 }
 
