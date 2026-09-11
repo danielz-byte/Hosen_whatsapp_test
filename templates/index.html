@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>HOSEN WhatsApp Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 820px;
+      margin: 40px auto;
+      padding: 0 18px;
+      background: #f4f6f8;
+      color: #20242a;
+    }
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.08);
+      margin-bottom: 18px;
+    }
+    h1 { margin-top: 0; }
+    textarea {
+      width: 100%;
+      min-height: 150px;
+      box-sizing: border-box;
+      padding: 12px;
+      font-size: 16px;
+    }
+    button {
+      margin-top: 12px;
+      padding: 12px 20px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    pre {
+      direction: ltr;
+      text-align: left;
+      white-space: pre-wrap;
+      background: #111827;
+      color: #e5e7eb;
+      padding: 14px;
+      border-radius: 10px;
+      overflow-x: auto;
+    }
+    .ok { color: #137333; font-weight: bold; }
+    .bad { color: #b3261e; font-weight: bold; }
+    .small { color: #667085; font-size: 14px; }
+  </style>
+</head>
+<body>
+
+<div class="card">
+  <h1>HOSEN – WhatsApp Test</h1>
+
+  {% if configured %}
+    <p class="ok">Twilio מוגדר בשרת ✓</p>
+  {% else %}
+    <p class="bad">Twilio עדיין לא מוגדר בשרת</p>
+  {% endif %}
+
+  <p><b>From:</b> {{ whatsapp_from }}</p>
+  <p><b>To:</b> {{ whatsapp_to or "לא הוגדר" }}</p>
+  <p class="small">
+    PUBLIC_BASE_URL:
+    {{ public_base_url or "לא הוגדר – status callback כבוי" }}
+  </p>
+</div>
+
+<div class="card">
+  <h2>שליחת הודעת בדיקה</h2>
+
+  <textarea id="body">🚨 HOSEN TEST
+
+זוהי הודעת בדיקה ממערכת חוסן.
+Unit: TS-001
+Status: TEST
+Server: Railway</textarea>
+
+  <br>
+  <button onclick="sendMessage()">שלח WhatsApp</button>
+
+  <h3>תוצאה</h3>
+  <pre id="result">ממתין לבדיקה...</pre>
+</div>
+
+<div class="card">
+  <h2>Health</h2>
+  <button onclick="checkHealth()">בדוק שרת</button>
+  <pre id="health">ממתין...</pre>
+</div>
+
+<script>
+async function sendMessage() {
+  const result = document.getElementById("result");
+  result.textContent = "שולח...";
+
+  try {
+    const response = await fetch("/api/send-test", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({
+        body: document.getElementById("body").value
+      })
+    });
+
+    const data = await response.json();
+    result.textContent = JSON.stringify(data, null, 2);
+  } catch (err) {
+    result.textContent = String(err);
+  }
+}
+
+async function checkHealth() {
+  const target = document.getElementById("health");
+
+  try {
+    const response = await fetch("/health");
+    const data = await response.json();
+    target.textContent = JSON.stringify(data, null, 2);
+  } catch (err) {
+    target.textContent = String(err);
+  }
+}
+</script>
+
+</body>
+</html>
