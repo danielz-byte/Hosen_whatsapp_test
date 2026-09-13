@@ -96,15 +96,17 @@ def send_test():
         })
 
     except TwilioRestException as e:
-        app.logger.exception("Twilio API error")
-        return jsonify({
-            "ok": False,
-            "type": "TwilioRestException",
-            "status": e.status,
-            "code": e.code,
-            "message": e.msg,
-            "more_info": e.more_info,
-        }), 502
+
+    app.logger.exception("Twilio API error")
+
+    return jsonify({
+        "ok": False,
+        "type": "TwilioRestException",
+        "status": getattr(e, "status", None),
+        "code": getattr(e, "code", None),
+        "message": getattr(e, "msg", str(e)),
+        "details": str(e),
+    }), 502
 
     except Exception as e:
         app.logger.exception("Unexpected send error")
